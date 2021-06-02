@@ -13,9 +13,9 @@ use Slim\Exception\NotFoundException;
 
 require __DIR__ . '/vendor/autoload.php';
 require_once './Controllers/UsuarioController.php';
-require_once './Controllers/ProductoController.php';
-require_once './Controllers/PedidoController.php';
-require_once './Controllers/MesaController.php';
+//require_once './Controllers/ProductoController.php';
+//require_once './Controllers/PedidoController.php';
+//require_once './Controllers/MesaController.php';
 
 $app = AppFactory::create();
 $app->setBasePath('/LaComanda');
@@ -52,7 +52,7 @@ $app->group('/usuarios', function (RouteCollectorProxy $group){
     $group->get('/listar', \UsuarioController::class . ':ListarUsuarios');
     $group->get('/listar/{id}', \UsuarioController::class . ':ListarUnUsuario');
 });
-
+/*
 $app->group('/productos', function (RouteCollectorProxy $group){
     $group->post('/agregar', \ProductoController::class . ':CargarUnProducto');
     $group->get('/listar', \ProductoController::class . ':ListarProductos');
@@ -70,7 +70,7 @@ $app->group('/mesas', function (RouteCollectorProxy $group){
     $group->get('/listar', \MesaController::class . ':ListarMesas');
     $group->get('/listar/{id}', \MesaController::class . ':ListarUnaMesa');
 });
-
+*/
 $app->run();
 
 ?>

@@ -1,5 +1,5 @@
 <?php
-
+/*
 require_once './Services/IPedidoService.php';
 require_once './models/Pedido.php';
 require_once './models/Producto.php';
@@ -52,3 +52,6 @@ class PedidoController implements IPedidoService {
 
     }
 }
+
+*/
+?>

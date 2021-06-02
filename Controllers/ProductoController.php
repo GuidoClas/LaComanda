@@ -1,7 +1,7 @@
 <?php
-
+/*
 require_once './Services/IProductoService.php';
-require_once './models/Producto.php';
+require_once './models';
 
 class ProductoController implements IProductoService {
 
@@ -46,3 +46,5 @@ class ProductoController implements IProductoService {
 
     }
 }
+*/
+?>
