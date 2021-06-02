@@ -1,6 +1,6 @@
 <?php
 require_once './Services/IUsuarioService.php';
-use App\Models\Usuario as Usuario;
+use App\models\Usuario as Usuario;
 
 class UsuarioController implements IUsuarioService {
 
