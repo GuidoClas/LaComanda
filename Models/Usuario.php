@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Usuario extends Model{
 
     use SoftDeletes;
-    
+
     protected $primaryKey = 'id';
     protected $table = 'usuarios';
     public $incrementing = true;
@@ -17,7 +17,7 @@ class Usuario extends Model{
     const DELETED_AT = 'fechaBaja';
 
     protected $fillable = [
-        'nombre', 'apellido', 'fechaAlta', 'fechaBaja', 'tipo'
+        'tipo', 'nombre', 'apellido', 'fechaAlta', 'fechaBaja'
     ];
 }
 

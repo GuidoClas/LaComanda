@@ -1,8 +1,8 @@
 <?php
 
 require_once './Services/IMesaService.php';
-require_once './Models/Pedido.php';
-require_once './Models/Mesa.php';
+require_once './models/Pedido.php';
+require_once './models/Mesa.php';
 
 class MesaController implements IMesaService {
 
