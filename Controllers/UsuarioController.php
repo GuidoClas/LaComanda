@@ -1,6 +1,6 @@
 <?php
 require_once './Services/IUsuarioService.php';
-require_once './Domain/Usuario.php';
+use \App\Models\Usuario as Usuario;
 
 class UsuarioController implements IUsuarioService {
 
@@ -23,17 +23,25 @@ class UsuarioController implements IUsuarioService {
 
         $ArrayParam = $request->getParsedBody();
         $usuario = new Usuario();
-        $usuario->CrearUsuario($ArrayParam['nombre'], $ArrayParam['apellido'], $ArrayParam['fechaAlta'], $ArrayParam['fechaBaja'], $ArrayParam['tipo']);
+        $usuario->nombre = $ArrayParam['nombre'];
+        $usuario->apellido = $ArrayParam['apellido'];
+        $usuario->fechaAlta = $ArrayParam['fechaAlta'];
+        $usuario->fechaBaja = $ArrayParam['fechaBaja'];
+        $usuario->tipo = $ArrayParam['tipo'];
 
+        
         if($usuario->validarUsuario()){
-            if($usuario->InsertarUsuario() > 0){
-                $response->getBody()->write("Usuario cargado");
-            }
-            else{
-                $response->getBody()->write("Error al cargar");
-            }
+            $usuario->save();
+            $payload = json_encode(array("mensaje" => "Usuario cargado exitosamente"));
+            $response->getBody()->write($payload);
         }
-        return $response;
+        else{
+            $payload = json_encode(array("mensaje" => "error"));
+            $response->getBody()->write($payload);
+        }
+
+        return $response
+            ->withHeader('Content-Type', 'application/json');
     }
 
     public function BorrarUnUsuario($request, $response, $args){
