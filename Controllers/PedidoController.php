@@ -1,8 +1,8 @@
 <?php
 
 require_once './Services/IPedidoService.php';
-require_once './Domain/Pedido.php';
-require_once './Domain/Producto.php';
+require_once './Models/Pedido.php';
+require_once './Models/Producto.php';
 
 class PedidoController implements IPedidoService {
 
