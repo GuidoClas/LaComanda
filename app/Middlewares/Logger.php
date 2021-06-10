@@ -1,28 +1,30 @@
 <?php
+require_once __DIR__ . '/../Auth/Authentificator.php';
 
 use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Fig\Http\Message\StatusCodeInterface;
 use Slim\Psr7\Response;
 
-class Logger{
+class LoggerMW{
 
-    private static function log(Request $req, RequestHandler $handler){
+    static function Log(Request $req, RequestHandler $handler) : Response{
 
         $response = new Response();
-        $requestHeaders = $req->getHeaders();
+        $requestHeader = $req->getHeader('token');
+        $elToken = $requestHeader[0];
 
-        if ( !array_key_exists( 'Authorization', $requestHeaders ) ) return $response->withStatus( StatusCodeInterface::STATUS_FORBIDDEN );
-
-        $jwt = $requestHeaders['Authorization'][0];
-        
-        if ( Auth::Verificar($jwt) === false ) return $response->withStatus( StatusCodeInterface::STATUS_FORBIDDEN );
-        
-        if ( $func(Auth::ObtenerDatos($jwt)) === false ) return $response->withStatus( StatusCodeInterface::STATUS_FORBIDDEN );
-
-        $response = $handler->handle($req);
-
-        return $response;
+        try{
+            AuthentificatorJWT::VerificarToken($elToken);
+            $user = AuthentificatorJWT::ObtenerData($elToken);
+            //$user['usuario']->tipo === 'socio' verifico que sea socio y si lo es, le doy acceso al endpoint deseado, sino, devuelvo 401.
+            $response = $handler->handle($req);
+            return $response;
+        }catch(Exception $ex){
+            $response->getBody->write($ex->getMessage());
+            $response->withStatus(401);
+            return $response;
+        }
     }
 }
 

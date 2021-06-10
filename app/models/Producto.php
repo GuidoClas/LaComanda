@@ -3,7 +3,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
+//ProductoDelPedido, y obtener tipo, precio y descripcion de otra table Producto que tenga estos datos. y  aclarar el SECTOR del producto
 class Producto extends Model{
 
     use SoftDeletes;

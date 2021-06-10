@@ -16,6 +16,7 @@ require_once './Controllers/UsuarioController.php';
 require_once './Controllers/ProductoController.php';
 require_once './Controllers/PedidoController.php';
 require_once './Controllers/MesaController.php';
+require_once './Controllers/AuthController.php';
 
 $app = AppFactory::create();
 $app->setBasePath('/LaComanda/app');
@@ -46,13 +47,11 @@ $capsule->addConnection([
 $capsule->setAsGlobal();
 $capsule->bootEloquent();
 
-$app->get('/', function (Request $request, Response $response, $args) {
-    $response->getBody()->write("Bienvenido a la comanda!");
-    return $response;
-});
+$app->post('/log', \AuthController::class . ':IniciarSesion');
+$app->get('/logDatos', \AuthController::class . ':ProbarDatos');
 
 $app->group('/usuarios', function (RouteCollectorProxy $group){
-    $group->post('/agregar', \UsuarioController::class . ':CargarUnUsuario');
+    $group->post('/agregar', \UsuarioController::class . ':CargarUnUsuario');//leagregomiddleware
     $group->get('/listar', \UsuarioController::class . ':ListarUsuarios');
     $group->get('/listarUno/{id}', \UsuarioController::class . ':ListarUnUsuario');
     $group->put('/{id}', \UsuarioController::class . ':ModificarUnUsuario');
