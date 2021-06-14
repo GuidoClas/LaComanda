@@ -2,9 +2,9 @@
 
 require_once './Services/IPedidoService.php';
 require_once './models/Pedido.php';
-require_once './models/Producto.php';
+require_once './models/ProductoDelPedido.php';
 
-use App\Models\Producto as Producto;
+use App\Models\ProductoDelPedido as ProductoDelPedido;
 use App\Models\Pedido as Pedido;
 
 class PedidoController implements IPedidoService {
@@ -16,7 +16,24 @@ class PedidoController implements IPedidoService {
 
         $pedido = Pedido::find($pedidoId);
 
-        $pedido->listaProductos = Producto::where('id_pedido', $pedidoId)->get();
+        $pedido->listaProductos = ProductoDelPedido::where('id_pedido', $pedidoId)->get();
+        array_push($arrayFinal, $pedido);
+        
+        $payload = json_encode($pedido);
+
+        $response->getBody()->write($payload);
+        return $response
+          ->withHeader('Content-Type', 'application/json');
+    }
+
+    public function ListarUnPedidoPorCodigo($request, $response, $args)
+    {
+        $arrayFinal = array();
+        $pedidoCod = $args['codigo'];
+
+        $pedido = Pedido::where('codigo', $pedidoCod)->get();
+
+        $pedido->listaProductos = ProductoDelPedido::where('id_pedido', $pedido->id)->get();
         array_push($arrayFinal, $pedido);
         
         $payload = json_encode($pedido);
@@ -33,7 +50,7 @@ class PedidoController implements IPedidoService {
         
         foreach($pedidos as $pedido){
             //push productos a $pedido y push $pedido a $arrayFinal.
-            $pedido->listaProductos = Producto::where('id_pedido',$pedido->id)->get();
+            $pedido->listaProductos = ProductoDelPedido::where('id_pedido',$pedido->id)->get();
             array_push($arrayFinal, $pedido);
         }
 
@@ -108,6 +125,31 @@ class PedidoController implements IPedidoService {
             $payload = json_encode(array("mensaje" => "Pedido modificado con exito"));
         } else {
             $payload = json_encode(array("mensaje" => "Pedido no encontrado"));
+        }
+
+        $response->getBody()->write($payload);
+        return $response
+        ->withHeader('Content-Type', 'application/json');
+    }
+    
+    public function ActualizarUnPedido($request, $response, $args){
+        $parametros = $request->getParsedBody();
+        $idPedido = $parametros['id'];
+        $nuevoEstado = $parametros['estado'];
+
+        if($nuevoEstado !== null && $idPedido !== null){
+            $pedido = Pedido::find($idPedido);
+    
+            // Si existe
+            if ($pedido !== null) {
+                // Colocamos el codigo de mesa
+                $pedido->estado = $nuevoEstado;
+                // Guardamos en base de datos
+                $pedido->save();
+                $payload = json_encode(array("mensaje" => "Estado del Pedido actualizado con exito"));
+            } else {
+                $payload = json_encode(array("mensaje" => "Pedido no encontrado"));
+            }
         }
 
         $response->getBody()->write($payload);

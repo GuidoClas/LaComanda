@@ -13,17 +13,14 @@ class AuthController{
         $user = $arrayParam['username'];
         $pass = $arrayParam['pass'];
 
-        //$usuario = new Usuario();
-        $user = Usuario::where('nombre', $user)->where('apellido', $pass)->get();
-
-        if(!isset($user) || $user === null){
+        $user = Usuario::where('usuario', $user)->where('clave', $pass)->get();
+        
+        if(!isset($user)){
             $payload = json_encode(array("mensaje" => "Usuario no existente"));
             $response->getBody()->write($payload);
             return $response;
         }
         else{
-            //$idUser = $user->id;
-            //$tipoUser = $user->tipo;
             $datos = json_encode(array("usuario" => $user));
             $token = AuthentificatorJWT::GenerarToken($datos);
 

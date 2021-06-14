@@ -3,9 +3,12 @@
 require_once './Services/IMesaService.php';
 require_once './models/Pedido.php';
 require_once './models/Mesa.php';
+require_once './models/Cliente.php';
+require_once './Controllers/ClienteController.php';
 
 use App\Models\Mesa as Mesa;
 use App\Models\Pedido as Pedido;
+use App\Models\Cliente as Cliente;
 
 class MesaController implements IMesaService {
 
@@ -17,6 +20,22 @@ class MesaController implements IMesaService {
         $mesa = Mesa::find($mesaId);
 
         $mesa->listaPedidos = Pedido::where('id_mesa', $mesaId)->get();
+        array_push($arrayFinal, $mesa);
+        
+        $payload = json_encode($mesa);
+
+        $response->getBody()->write($payload);
+        return $response
+          ->withHeader('Content-Type', 'application/json');
+    }
+
+    public function ListarUnaMesaPorCodigo($request, $response, $args)
+    {
+        $arrayFinal = array();
+        $mesaCod = $args['codigo'];
+        $mesa = Mesa::where('codigo', $mesaCod)->first();
+
+        $mesa->listaPedidos = Pedido::where('id_mesa', $mesa->id)->get();
         array_push($arrayFinal, $mesa);
         
         $payload = json_encode($mesa);
@@ -52,6 +71,7 @@ class MesaController implements IMesaService {
         $mesa->estado = $ArrayParam['estado'];
 
         if($mesa !== null){
+            $cliente = Cliente::find($mesa->id_cliente);
             $mesa->save();
             $payload = json_encode(array("mensaje" => "Mesa cargada exitosamente"));
             $response->getBody()->write($payload);
@@ -104,7 +124,13 @@ class MesaController implements IMesaService {
             $mesa->estado = $mesaModificada->estado;
             // Guardamos en base de datos
             $mesa->save();
-            $payload = json_encode(array("mensaje" => "Mesa modificada con exito"));
+
+            // Le setteamos el codigo de la mesa generada al cliente correspondiente.
+            if(ClienteController::ModificarUnCliente($mesa->id_cliente, $mesa->codigo)){
+                $payload = json_encode(array("mensaje" => "Mesa modificada con exito"));
+            } else{
+                $payload = json_encode(array("mensaje" => "No se pudo asignar la mesa al cliente"));
+            }
         } else {
             $payload = json_encode(array("mensaje" => "Mesa no encontrada"));
         }

@@ -4,12 +4,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Producto extends Model{
+class ProductoDelPedido extends Model{
 
     use SoftDeletes;
 
     protected $primaryKey = 'id';
-    protected $table = 'productos';
+    protected $table = 'productos_del_pedido';
     public $incrementing = true;
     public $timestamps = true;
 
@@ -18,7 +18,7 @@ class Producto extends Model{
     const UPDATED_AT = 'fechaMod';
 
     protected $fillable = [
-        'tipo', 'precio', 'descripcion', 'fechaAlta', 'fechaBaja', 'fechaMod'
+        'id_pedido', 'sector','fechaAlta', 'fechaBaja', 'fechaMod'
     ];
 }
 

@@ -6,9 +6,9 @@ use App\Models\Usuario as Usuario;
 class UsuarioController implements IUsuarioService {
 
     public function ListarUnUsuario($request, $response, $args){
-        $usu = intval($args['id']);
+        $usuId = intval($args['id']);
 
-        $usuario = Usuario::find($usu);
+        $usuario = Usuario::find($usuId);
         $payload = json_encode($usuario);
 
         $response->getBody()->write($payload);
@@ -31,9 +31,11 @@ class UsuarioController implements IUsuarioService {
 
         $ArrayParam = $request->getParsedBody();
         $usuario = new Usuario();
+        $usuario->usuario = $ArrayParam['usuario'];
+        $usuario->clave = $ArrayParam['clave'];
         $usuario->nombre = $ArrayParam['nombre'];
         $usuario->apellido = $ArrayParam['apellido'];
-        $usuario->fechaAlta = $ArrayParam['fechaAlta'];
+        $usuario->estado = $ArrayParam['estado'];
         $usuario->tipo = $ArrayParam['tipo'];
 
         
@@ -69,9 +71,11 @@ class UsuarioController implements IUsuarioService {
         $parametros = $request->getParsedBody();
         
         $usrModificado = new Usuario();
+        $usrModificado->usuario = $parametros['usuario'];
+        $usrModificado->clave = $parametros['clave'];
         $usrModificado->nombre = $parametros['nombre'];
         $usrModificado->apellido = $parametros['apellido'];
-        $usrModificado->fechaAlta = $parametros['fechaAlta'];
+        $usrModificado->estado = $parametros['estado'];
         $usrModificado->tipo = $parametros['tipo'];
         $usuarioId = $args['id'];
 
@@ -79,15 +83,61 @@ class UsuarioController implements IUsuarioService {
         $usr = Usuario::where('id', '=', $usuarioId)->first();
 
         // Si existe
-        if ($usr !== null) {
+        if (isset($usr)) {
             // Seteamos un nuevo usuario
+            $usr->usuario = $usrModificado->usuario;
+            $usr->clave = $usrModificado->clave;
             $usr->nombre = $usrModificado->nombre;
             $usr->apellido = $usrModificado->apellido;
-            $usr->fechaAlta = $usrModificado->fechaAlta;
+            $usr->estado = $usrModificado->estado;
             $usr->tipo = $usrModificado->tipo;
             // Guardamos en base de datos
             $usr->save();
             $payload = json_encode(array("mensaje" => "Usuario modificado con exito"));
+        } else {
+            $payload = json_encode(array("mensaje" => "Usuario no encontrado"));
+        }
+
+        $response->getBody()->write($payload);
+        return $response
+        ->withHeader('Content-Type', 'application/json');
+    }
+
+    public function SuspenderUnUsuario($request, $response, $args){
+        $idUser = $args['id'];
+
+        // Conseguimos el objeto
+        $user = Usuario::find($idUser);
+
+        // Si existe
+        if (isset($user)) {
+            // Seteamos un nuevo estado
+            $user->estado = "Suspendido";
+            // Guardamos en base de datos
+            $user->save();
+            $payload = json_encode(array("mensaje" => "Usuario suspendido con exito"));
+        } else {
+            $payload = json_encode(array("mensaje" => "Usuario no encontrado"));
+        }
+
+        $response->getBody()->write($payload);
+        return $response
+        ->withHeader('Content-Type', 'application/json');
+    }
+
+    public function ReasignarUnUsuario($request, $response, $args){
+        $idUser = $args['id'];
+
+        // Conseguimos el objeto
+        $user = Usuario::find($idUser);
+
+        // Si existe
+        if (isset($user)) {
+            // Seteamos un nuevo estado
+            $user->estado = "Activo";
+            // Guardamos en base de datos
+            $user->save();
+            $payload = json_encode(array("mensaje" => "Usuario reasignado con exito"));
         } else {
             $payload = json_encode(array("mensaje" => "Usuario no encontrado"));
         }
