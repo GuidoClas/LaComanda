@@ -2,24 +2,33 @@
 
 require_once './Services/IPedidoService.php';
 require_once './models/Pedido.php';
+require_once './models/Producto.php';
 require_once './models/ProductoDelPedido.php';
 
 use App\Models\ProductoDelPedido as ProductoDelPedido;
+use App\Models\Producto as Producto;
 use App\Models\Pedido as Pedido;
 
 class PedidoController implements IPedidoService {
 
     public function ListarUnPedido($request, $response, $args)
     {
-        $arrayFinal = array();
         $pedidoId = intval($args['id']);
 
         $pedido = Pedido::find($pedidoId);
-
-        $pedido->listaProductos = ProductoDelPedido::where('id_pedido', $pedidoId)->get();
-        array_push($arrayFinal, $pedido);
-        
-        $payload = json_encode($pedido);
+        if(isset($pedido)){
+            $productoDelPedido = ProductoDelPedido::where('id_pedido', $pedido->id)->first();
+            $prod = Producto::find($productoDelPedido->id_prod);
+            if(isset($prod->tipo) && isset($prod->precio) && isset($prod->descripcion)){
+                $productoDelPedido->tipo = $prod->tipo;
+                $productoDelPedido->precio = $prod->precio;
+                $productoDelPedido->descripcion = $prod->descripcion;
+                $pedido->listaProductos = $productoDelPedido;
+            }
+            $payload = json_encode($pedido);
+        }else{
+            $payload = json_encode(array("mensaje" => "error"));
+        }
 
         $response->getBody()->write($payload);
         return $response
@@ -28,13 +37,18 @@ class PedidoController implements IPedidoService {
 
     public function ListarUnPedidoPorCodigo($request, $response, $args)
     {
-        $arrayFinal = array();
         $pedidoCod = $args['codigo'];
 
-        $pedido = Pedido::where('codigo', $pedidoCod)->get();
+        $pedido = Pedido::where('codigo', $pedidoCod)->first();
 
-        $pedido->listaProductos = ProductoDelPedido::where('id_pedido', $pedido->id)->get();
-        array_push($arrayFinal, $pedido);
+        $productoDelPedido = ProductoDelPedido::where('id_pedido', $pedido->id)->first();
+        $prod = Producto::find($productoDelPedido->id_prod);
+        if(isset($prod->tipo) && isset($prod->precio) && isset($prod->descripcion)){
+            $productoDelPedido->tipo = $prod->tipo;
+            $productoDelPedido->precio = $prod->precio;
+            $productoDelPedido->descripcion = $prod->descripcion;
+            $pedido->listaProductos = $productoDelPedido;
+        }
         
         $payload = json_encode($pedido);
 
@@ -45,17 +59,56 @@ class PedidoController implements IPedidoService {
 
     public function ListarPedidos($request, $response){
 
-        $arrayFinal = array();
         $pedidos = Pedido::all();
         
         foreach($pedidos as $pedido){
             //push productos a $pedido y push $pedido a $arrayFinal.
-            $pedido->listaProductos = ProductoDelPedido::where('id_pedido',$pedido->id)->get();
-            array_push($arrayFinal, $pedido);
+            $productoDelPedido = ProductoDelPedido::where('id_pedido', $pedido->id)->first();
+            $prod = Producto::find($productoDelPedido->id_prod);
+            if(isset($prod->tipo) && isset($prod->precio) && isset($prod->descripcion)){
+                $productoDelPedido->tipo = $prod->tipo;
+                $productoDelPedido->precio = $prod->precio;
+                $productoDelPedido->descripcion = $prod->descripcion;
+            }
+            $pedido->listaProductos = $productoDelPedido;
         }
 
-        $pedidosJson = json_encode($arrayFinal);
+        $pedidosJson = json_encode($pedidos);
         $response->getBody()->write($pedidosJson);
+        
+        return $response
+        ->withHeader('Content-Type', 'application/json');
+    }
+
+    public function ListarPedidosPendientes($request, $response){
+
+        $pedidos = Pedido::all();
+        $arrayFinal = array();
+
+        foreach($pedidos as $pedido){
+            if($pedido->estado === 'En preparacion'){
+                //push productos a $pedido y push $pedido a $arrayFinal.
+                $productoDelPedido = ProductoDelPedido::where('id_pedido', $pedido->id)->first();
+                if($productoDelPedido->estado == 'Pendiente'){
+                    $prod = Producto::find($productoDelPedido->id_prod);
+                    if(isset($prod->tipo) && isset($prod->precio) && isset($prod->descripcion)){
+                        $productoDelPedido->tipo = $prod->tipo;
+                        $productoDelPedido->precio = $prod->precio;
+                        $productoDelPedido->descripcion = $prod->descripcion;
+                    }
+                    $pedido->listaProductos = $productoDelPedido;
+                    array_push($arrayFinal, $pedido);
+                }
+            }
+        }
+
+        if(empty($arrayFinal) || $arrayFinal === null){
+            $payload = json_encode(array("mensaje" => "No hay pedidos pendientes"));
+            $response->getBody()->write($payload);
+        }else{
+            $pedidosJson = json_encode($arrayFinal);
+            $response->getBody()->write($pedidosJson);
+        }
         
         return $response
         ->withHeader('Content-Type', 'application/json');
@@ -67,7 +120,7 @@ class PedidoController implements IPedidoService {
         $pedido = new Pedido();
         $pedido->id_mesa = $ArrayParam['id_mesa'];
         $pedido->codigo = $ArrayParam['codigo'];
-        $pedido->estado = $ArrayParam['estado'];
+        $pedido->estado = "En preparacion";
 
         if($pedido){
             $pedido->save();
@@ -144,6 +197,50 @@ class PedidoController implements IPedidoService {
             if ($pedido !== null) {
                 // Colocamos el codigo de mesa
                 $pedido->estado = $nuevoEstado;
+                // Guardamos en base de datos
+                $pedido->save();
+                $payload = json_encode(array("mensaje" => "Estado del Pedido actualizado con exito"));
+            } else {
+                $payload = json_encode(array("mensaje" => "Pedido no encontrado"));
+            }
+        }
+
+        $response->getBody()->write($payload);
+        return $response
+        ->withHeader('Content-Type', 'application/json');
+    }
+
+    public function ListarParaServirPedido($request, $response, $args){
+        $codigo = $args['codigo'];
+
+        if($codigo !== null && strlen($codigo) == 5){
+            $pedido = Pedido::where('codigo', $codigo)->first();
+            // Si existe
+            if ($pedido !== null) {
+                // Colocamos el estado en listo
+                $pedido->estado = "Listo para servir";
+                // Guardamos en base de datos
+                $pedido->save();
+                $payload = json_encode(array("mensaje" => "Estado del Pedido actualizado con exito"));
+            } else {
+                $payload = json_encode(array("mensaje" => "Pedido no encontrado"));
+            }
+        }
+
+        $response->getBody()->write($payload);
+        return $response
+        ->withHeader('Content-Type', 'application/json');
+    }
+
+    public function EntregarPedido($request, $response, $args){
+        $codigo = $args['codigo'];
+
+        if($codigo !== null && strlen($codigo) == 5){
+            $pedido = Pedido::where('codigo', $codigo)->first();
+            // Si existe
+            if ($pedido !== null) {
+                // Colocamos el estado en entregado
+                $pedido->estado = "Entregado";
                 // Guardamos en base de datos
                 $pedido->save();
                 $payload = json_encode(array("mensaje" => "Estado del Pedido actualizado con exito"));

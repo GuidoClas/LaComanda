@@ -18,7 +18,7 @@ class ProductoDelPedido extends Model{
     const UPDATED_AT = 'fechaMod';
 
     protected $fillable = [
-        'id_pedido', 'sector','fechaAlta', 'fechaBaja', 'fechaMod'
+        'id_pedido', 'id_prod', 'sector', 'estado','fechaAlta', 'fechaBaja', 'fechaMod'
     ];
 }
 

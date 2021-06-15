@@ -38,7 +38,6 @@ class LoggerMW{
         $response = new Response();
         $requestHeader = $req->getHeader('token');
         $elToken = $requestHeader[0];
-
         try{
             AuthentificatorJWT::VerificarToken($elToken);
             $user = AuthentificatorJWT::ObtenerData($elToken);
@@ -85,6 +84,33 @@ class LoggerMW{
         }
     }
 
+    static function LogSectorCorrecto(Request $req, RequestHandler $handler) : Response{
+
+        $response = new Response();
+        $requestHeader = $req->getHeader('token');
+        $elToken = $requestHeader[0];
+
+        $params =$req->getParsedBody();
+        $sector = $params['sector'];
+
+        try{
+            AuthentificatorJWT::VerificarToken($elToken);
+            $user = AuthentificatorJWT::ObtenerData($elToken);
+            $user = json_decode ($user,true);
+
+            if($user['usuario'][0]['tipo'] === $sector){
+                $response = $handler->handle($req);
+                return $response;
+            }
+            else{
+                throw new Exception("Este usuario no tiene permitido tomar productos de este sector");
+            }
+        }catch(Exception $ex){
+            $response->getBody()->write($ex->getMessage());
+            return $response->withStatus(401);
+        }
+    }
+    
 }
 
 

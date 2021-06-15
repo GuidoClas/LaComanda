@@ -27,12 +27,11 @@ $app->addRoutingMiddleware();
 // Add error middleware
 $app->addErrorMiddleware(true, true, true);
 
-//ELOQUENT
 // Load ENV
-
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . "/../");
 $dotenv->safeLoad();
 
+//ELOQUENT
 $container=$app->getContainer();
 
 $capsule = new Capsule;
@@ -68,12 +67,13 @@ $app->group('/clientes', function (RouteCollectorProxy $group){
 })->add(\LoggerMW::class . ':LogMozoYSocio');
 
 $app->group('/productosDelPedido', function (RouteCollectorProxy $group){
-    $group->post('/agregar', \ProductoDelPedidoController::class . ':CargarUnProducto')->add(\LoggerMW::class . ':LogMozoYSocio');;
-    $group->get('/listar', \ProductoDelPedidoController::class . ':ListarProductos')->add(\LoggerMW::class . ':LogMozoYSocio');;
-    $group->get('/listarUno/{id}', \ProductoDelPedidoController::class . ':ListarUnProducto')->add(\LoggerMW::class . ':LogMozoYSocio');;
-    $group->put('/{id}', \ProductoDelPedidoController::class . ':ModificarUnProducto')->add(\LoggerMW::class . ':LogMozoYSocio');;
-    $group->delete('/{id}', \ProductoDelPedidoController::class . ':BorrarUnProducto')->add(\LoggerMW::class . ':LogMozoYSocio');;
-});
+    $group->post('/agregar', \ProductoDelPedidoController::class . ':CargarUnProducto');
+    $group->get('/listar', \ProductoDelPedidoController::class . ':ListarProductos');
+    $group->get('/listarUno/{id}', \ProductoDelPedidoController::class . ':ListarUnProducto');
+    $group->put('/{id}', \ProductoDelPedidoController::class . ':ModificarUnProducto');
+    $group->delete('/{id}', \ProductoDelPedidoController::class . ':BorrarUnProducto');
+    $group->put('/elaborarProducto/{id}', \ProductoDelPedidoController::class . ':TomarProductoParaElaborar')->add(\LoggerMW::class . ':LogSectorCorrecto');
+})->add(\LoggerMW::class . ':LogEmpleado');
 
 $app->group('/pedidos', function (RouteCollectorProxy $group){
     $group->post('/agregar', \PedidoController::class . ':CargarUnPedido')->add(\LoggerMW::class . ':LogMozoYSocio');
@@ -82,11 +82,12 @@ $app->group('/pedidos', function (RouteCollectorProxy $group){
     $group->put('/{id}', \PedidoController::class . ':ModificarUnPedido')->add(\LoggerMW::class . ':LogMozoYSocio');
     $group->delete('/{id}', \PedidoController::class . ':BorrarUnPedido')->add(\LoggerMW::class . ':LogMozoYSocio');
     $group->put('/estado/{id}', \PedidoController::class . ':ActualizarEstadoPedido')->add(\LoggerMW::class . ':LogEmpleado');
-    
+    $group->get('/listarPendientes',\PedidoController::class . ':ListarPedidosPendientes')->add(\LoggerMW::class . ':LogEmpleado');
+    $group->put('/listarParaServir/{codigo}',\PedidoController::class . ':ListarParaServirPedido')->add(\LoggerMW::class . ':LogMozoYSocio');
+    $group->put('/entregar/{codigo}',\PedidoController::class . ':EntregarPedido')->add(\LoggerMW::class . ':LogMozoYSocio');
+
     //El cliente puede ver su pedido sin ninguna validacion
     $group->get('/{codigo}', \PedidoController::class . ':ListarUnPedidoPorCodigo');
-    //listar pedidos pendientes
-    //Empleado toma pedido dependiendo del sector de los productos.
 });
 
 $app->group('/mesas', function (RouteCollectorProxy $group){
@@ -97,7 +98,7 @@ $app->group('/mesas', function (RouteCollectorProxy $group){
     $group->delete('/{id}', \MesaController::class . ':BorrarUnaMesa')->add(\LoggerMW::class . ':LogMozoYSocio');
 
     //El cliente puede ver su pedido sin ninguna validacion
-    $group->get('/listarUnaParaCliente/{codigo}', \MesaController::class . ':ListarUnaMesaPorCodigo');
+    $group->get('/listarUnaParaCliente/{codigo}', \MesaController::class . ':ListarUnaMesaPorCodigo');//acá devuelvo duracion
 });
 
 $app->run();
