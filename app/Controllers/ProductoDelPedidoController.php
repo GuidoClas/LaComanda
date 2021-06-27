@@ -3,25 +3,23 @@
 require_once './Services/IProductoService.php';
 require_once './models/ProductoDelPedido.php';
 require_once './models/Producto.php';
+require_once './models/Pedido.php';
 
 use App\Models\ProductoDelPedido as ProductoDelPedido;
 use App\Models\Producto as Producto;
+use App\Models\Pedido as Pedido;
 
 class ProductoDelPedidoController implements IProductoService {
 
     public function ListarUnProducto($request, $response, $args)
     {
         $prodId = intval($args['id']);
-        $array = array();
-
+        
         //consigo el producto del pedido.
         $productoDelPedido = ProductoDelPedido::find($prodId);
         //consigo los datos del producto.
         $prod = Producto::find($productoDelPedido->id_prod);
-        //var_dump($prod);
-
         //asigno al productoDelPedido
-        //var_dump($prod->tipo);
         $productoDelPedido->tipo = $prod->tipo;
         $productoDelPedido->precio = $prod->precio;
         $productoDelPedido->descripcion = $prod->descripcion;
@@ -62,6 +60,7 @@ class ProductoDelPedidoController implements IProductoService {
         $prod->id_prod = $ArrayParam['id_prod'];
         $prod->sector = $ArrayParam['sector'];
         $prod->estado = $ArrayParam['estado'];
+        $prod->duracionEstimada = $ArrayParam['duracionEstimada'];
        
         if(isset($prod)){
             $prod->save();
@@ -127,6 +126,7 @@ class ProductoDelPedidoController implements IProductoService {
         $parametros = $request->getParsedBody();
         $idProd = $args['id'];
         $sector = $parametros['sector'];
+        $duracionEstimada = $parametros['duracionEstimada'];
 
         if($sector !== null && $idProd !== null){
             $productoDelPedido = ProductoDelPedido::find($idProd);
@@ -134,11 +134,48 @@ class ProductoDelPedidoController implements IProductoService {
             // Si existe
             if ($productoDelPedido !== null) {
                 // Colocamos el codigo de mesa
-                $productoDelPedido->estado = "En Preparación";
-                //acá agregar tiempo de finalizacion
+                $productoDelPedido->estado = "En Preparacion";
+                $productoDelPedido->duracionEstimada = $duracionEstimada;
+
+                $pedidoDeEsteProducto = Pedido::find($productoDelPedido->id_pedido);
+                if(isset($pedidoDeEsteProducto) && $pedidoDeEsteProducto->estado === "Pendiente"){
+                    $pedidoDeEsteProducto->estado = "En Preparacion";
+                    $pedidoDeEsteProducto->save();
+                }
                 // Guardamos en base de datos
                 $productoDelPedido->save();
                 $payload = json_encode(array("mensaje" => "Producto tomado con exito"));
+            } else {
+                $payload = json_encode(array("mensaje" => "Producto no encontrado"));
+            }
+        }
+
+        $response->getBody()->write($payload);
+        return $response
+        ->withHeader('Content-Type', 'application/json');
+
+        $response->getBody()->write($payload);
+        return $response
+        ->withHeader('Content-Type', 'application/json');
+    }
+
+    public function EntregarProducto($request, $response, $args){
+        $parametros = $request->getParsedBody();
+        $idProd = $args['id'];
+        $sector = $parametros['sector'];
+        $duracionFinal = $parametros['duracionFinal'];
+
+        if($sector !== null && $idProd !== null){
+            $productoDelPedido = ProductoDelPedido::find($idProd);
+    
+            // Si existe
+            if ($productoDelPedido !== null) {
+                // Colocamos el producto como terminado y con duración final
+                $productoDelPedido->estado = "Terminado";
+                $productoDelPedido->duracionFinal = $duracionFinal;
+                // Guardamos en base de datos
+                $productoDelPedido->save();
+                $payload = json_encode(array("mensaje" => "Producto terminado con exito"));
             } else {
                 $payload = json_encode(array("mensaje" => "Producto no encontrado"));
             }

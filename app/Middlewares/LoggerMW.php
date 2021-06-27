@@ -98,7 +98,7 @@ class LoggerMW{
             $user = AuthentificatorJWT::ObtenerData($elToken);
             $user = json_decode ($user,true);
 
-            if($user['usuario'][0]['tipo'] === $sector){
+            if($user['usuario'][0]['tipo'] === $sector || $user['usuario'][0]['tipo'] === 'Socio'){
                 $response = $handler->handle($req);
                 return $response;
             }

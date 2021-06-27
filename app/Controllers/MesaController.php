@@ -4,11 +4,15 @@ require_once './Services/IMesaService.php';
 require_once './models/Pedido.php';
 require_once './models/Mesa.php';
 require_once './models/Cliente.php';
+require_once './models/ProductoDelPedido.php';
+require_once './models/Producto.php';
 require_once './Controllers/ClienteController.php';
 
 use App\Models\Mesa as Mesa;
 use App\Models\Pedido as Pedido;
 use App\Models\Cliente as Cliente;
+use App\Models\ProductoDelPedido as ProductoDelPedido;
+use App\Models\Producto as Producto;
 
 class MesaController implements IMesaService {
 
@@ -29,17 +33,19 @@ class MesaController implements IMesaService {
           ->withHeader('Content-Type', 'application/json');
     }
 
-    public function ListarUnaMesaPorCodigo($request, $response, $args)
+    public function DevolverDuracion($request, $response, $args)
     {
-        $arrayFinal = array();
-        $mesaCod = $args['codigo'];
+        $mesaCod = $args['codigoMesa'];
+        $pedidoCod = $args['codigoPedido'];
+
         $mesa = Mesa::where('codigo', $mesaCod)->first();
+        /////
+        $pedido = Pedido::where('codigo', $pedidoCod)->first();
+        /////
+        $minutosRestantes = ProductoDelPedido::where('id_pedido', $pedido->id)->where('estado', 'En Preparacion')->sum('duracionEstimada');
+        $horasRestantes = round($minutosRestantes / 60, 1); 
 
-        $mesa->listaPedidos = Pedido::where('id_mesa', $mesa->id)->get();
-        array_push($arrayFinal, $mesa);
-        
-        $payload = json_encode($mesa);
-
+        $payload = json_encode(array("minutos" => $minutosRestantes, "horas" => $horasRestantes));
         $response->getBody()->write($payload);
         return $response
           ->withHeader('Content-Type', 'application/json');
@@ -47,11 +53,30 @@ class MesaController implements IMesaService {
 
     public function ListarMesas($request, $response){
 
+        $arrayPedidos = array();
         $arrayFinal = array();
         $mesas = Mesa::all();
         
         foreach($mesas as $mesa){
-            $mesa->listaPedidos = Pedido::where('id_mesa', $mesa->id)->get();
+            $pedidos = Pedido::where('id_mesa', $mesa->id)->get(); 
+
+            foreach($pedidos as $pedido){
+              
+                $productoDelPedidos = ProductoDelPedido::where('id_pedido', $pedido->id)->get();
+                foreach($productoDelPedidos as $p){
+                    $prod = Producto::find($p->id_prod);
+        
+                    if(isset($prod->tipo) && isset($prod->precio) && isset($prod->descripcion)){
+                        $p->tipo = $prod->tipo;
+                        $p->precio = $prod->precio;
+                        $p->descripcion = $prod->descripcion;
+                    }
+                }
+                $pedido->listaProductos = $productoDelPedidos;
+                array_push($arrayPedidos, $pedido);
+            }
+            
+            $mesa->listaPedidos = $arrayPedidos;
             array_push($arrayFinal, $mesa);
         }
 
@@ -138,6 +163,72 @@ class MesaController implements IMesaService {
         $response->getBody()->write($payload);
         return $response
         ->withHeader('Content-Type', 'application/json');
+    }
+
+    public function ModificarEstadoDeMesa($request, $response, $args){
+        $idMesa = $args['id'];
+        $estadoNum = $args['estado'];
+        $nuevoEstado = self::AsignarEstadoMesa($estadoNum);
+
+        // Conseguimos el objeto
+        $mesa = Mesa::find($idMesa);
+
+        // Si existe
+        if ($mesa !== null) {
+            // Colocamos el estado de mesa
+            $mesa->estado = $nuevoEstado;
+            // Guardamos en base de datos
+            $mesa->save();
+            $payload = json_encode(array("mensaje" => "Estado de mesa actualizado con exito"));
+        } else {
+            $payload = json_encode(array("mensaje" => "Mesa no encontrada"));
+        }
+
+        $response->getBody()->write($payload);
+        return $response
+        ->withHeader('Content-Type', 'application/json');
+    }
+
+    public function CerrarMesa($request, $response, $args){
+        $idMesa = $args['id'];
+        $nuevoEstado = "Cerrada";
+
+        // Conseguimos el objeto
+        $mesa = Mesa::find($idMesa);
+
+        // Si existe
+        if (isset($mesa)) {
+            // Colocamos el estado de mesa
+            $mesa->estado = $nuevoEstado;
+            // Guardamos en base de datos
+            $mesa->save();
+            $payload = json_encode(array("mensaje" => "Estado de mesa actualizado con exito"));
+        } else {
+            $payload = json_encode(array("mensaje" => "Mesa no encontrada"));
+        }
+
+        $response->getBody()->write($payload);
+        return $response
+        ->withHeader('Content-Type', 'application/json');
+    }
+
+    private static function AsignarEstadoMesa($estadoNum){
+        if($estadoNum > 0 && $estadoNum < 4){
+            switch($estadoNum){
+                case 1:
+                    $nuevoEstado = "Con cliente esperando pedido";
+                    break;
+                case 2:
+                    $nuevoEstado = "Con cliente comiendo";
+                    break;
+                case 3:
+                    $nuevoEstado = "Con cliente pagando";
+                    break;
+                default:
+                    $nuevoEstado = "Abierta";
+            }
+        }
+        return $nuevoEstado;
     }
 }
 

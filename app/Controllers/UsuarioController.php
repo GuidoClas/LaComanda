@@ -1,7 +1,9 @@
 <?php
 require_once './Services/IUsuarioService.php';
 require_once './models/Usuario.php';
+require_once './Utils/CSVLoader.php';
 use App\Models\Usuario as Usuario;
+use Utils\CSV\CSVLoader as CSV;
 
 class UsuarioController implements IUsuarioService {
 
@@ -145,6 +147,32 @@ class UsuarioController implements IUsuarioService {
         $response->getBody()->write($payload);
         return $response
         ->withHeader('Content-Type', 'application/json');
+    }
+
+    public function CargarPorCSV($request, $response){
+        $pathArchivo = self::ObtenerArchivo("archivoCSV");
+
+        $csv = CSV::ObtenerDatos($pathArchivo);
+
+        foreach($csv as $user){
+            $usuario = new Usuario();
+            $usuario->usuario = $user['usuario'];
+            $usuario->clave = $user['clave'];
+            $usuario->tipo = $user['tipo'];
+            $usuario->nombre = $user['nombre'];
+            $usuario->apellido =$user['apellido'];
+            $usuario->estado = $user['estado'];
+
+            $usuario->save();
+        }
+
+        $response->getBody()->write(json_encode(array("mensaje" => "Usuarios cargados por CSV")));
+        return $response
+        ->withHeader('Content-Type', 'application/json');
+    }
+
+    public static function ObtenerArchivo ( string $nombreFile ) : ?string {
+        return (key_exists($nombreFile, $_FILES)) ? $_FILES[$nombreFile]['tmp_name'] : NULL;
     }
 }
 

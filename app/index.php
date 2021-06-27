@@ -58,6 +58,9 @@ $app->group('/usuarios', function (RouteCollectorProxy $group){
     $group->delete('/{id}', \UsuarioController::class . ':BorrarUnUsuario');
     $group->put('/suspender/{id}',\UsuarioController::class . ':SuspenderUnUsuario');
     $group->put('/reasignar/{id}',\UsuarioController::class . ':ReasignarUnUsuario');
+
+    $group->post('/cargarCSV', \UsuarioController::class . ':CargarPorCSV');
+
 })->add(\LoggerMW::class . ':LogSocio');
 
 $app->group('/clientes', function (RouteCollectorProxy $group){
@@ -73,6 +76,7 @@ $app->group('/productosDelPedido', function (RouteCollectorProxy $group){
     $group->put('/{id}', \ProductoDelPedidoController::class . ':ModificarUnProducto');
     $group->delete('/{id}', \ProductoDelPedidoController::class . ':BorrarUnProducto');
     $group->put('/elaborarProducto/{id}', \ProductoDelPedidoController::class . ':TomarProductoParaElaborar')->add(\LoggerMW::class . ':LogSectorCorrecto');
+    $group->put('/entregarProducto/{id}', \ProductoDelPedidoController::class . ':EntregarProducto')->add(\LoggerMW::class . ':LogSectorCorrecto');
 })->add(\LoggerMW::class . ':LogEmpleado');
 
 $app->group('/pedidos', function (RouteCollectorProxy $group){
@@ -85,7 +89,8 @@ $app->group('/pedidos', function (RouteCollectorProxy $group){
     $group->get('/listarPendientes',\PedidoController::class . ':ListarPedidosPendientes')->add(\LoggerMW::class . ':LogEmpleado');
     $group->put('/listarParaServir/{codigo}',\PedidoController::class . ':ListarParaServirPedido')->add(\LoggerMW::class . ':LogMozoYSocio');
     $group->put('/entregar/{codigo}',\PedidoController::class . ':EntregarPedido')->add(\LoggerMW::class . ':LogMozoYSocio');
-
+    $group->put('/cancelar/{codigo}',\PedidoController::class . ':CancelarPedido')->add(\LoggerMW::class . ':LogMozoYSocio');
+    $group->get('/estadisticas30Dias',\PedidoController::class . ':ObtenerPedidos30DiasAtras')->add(\LoggerMW::class . ':LogSocio');
     //El cliente puede ver su pedido sin ninguna validacion
     $group->get('/{codigo}', \PedidoController::class . ':ListarUnPedidoPorCodigo');
 });
@@ -96,9 +101,13 @@ $app->group('/mesas', function (RouteCollectorProxy $group){
     $group->get('/listarUna/{id}', \MesaController::class . ':ListarUnaMesa')->add(\LoggerMW::class . ':LogMozoYSocio');
     $group->put('/{id}', \MesaController::class . ':ModificarUnaMesa')->add(\LoggerMW::class . ':LogMozoYSocio');
     $group->delete('/{id}', \MesaController::class . ':BorrarUnaMesa')->add(\LoggerMW::class . ':LogMozoYSocio');
+    //Solo el socio puede cerrar una mesa
+    $group->put('/cerrarMesa/{id}', \MesaController::class . ':CerrarMesa')->add(\LoggerMW::class . ':LogSocio');
 
-    //El cliente puede ver su pedido sin ninguna validacion
-    $group->get('/listarUnaParaCliente/{codigo}', \MesaController::class . ':ListarUnaMesaPorCodigo');//acá devuelvo duracion
+    $group->put('/{id}/{estado}', \MesaController::class . ':ModificarEstadoDeMesa')->add(\LoggerMW::class . ':LogMozoYSocio');
+
+    //El cliente puede ver su mesa y pedido sin ninguna validacion
+    $group->get('/listarUnaParaCliente/{codigoMesa}/{codigoPedido}', \MesaController::class . ':DevolverDuracion');
 });
 
 $app->run();
