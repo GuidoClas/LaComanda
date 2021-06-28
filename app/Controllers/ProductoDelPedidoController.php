@@ -1,6 +1,6 @@
 <?php
 
-require_once './Services/IProductoService.php';
+require_once './Services/ICrudEntity.php';
 require_once './models/ProductoDelPedido.php';
 require_once './models/Producto.php';
 require_once './models/Pedido.php';
@@ -9,9 +9,9 @@ use App\Models\ProductoDelPedido as ProductoDelPedido;
 use App\Models\Producto as Producto;
 use App\Models\Pedido as Pedido;
 
-class ProductoDelPedidoController implements IProductoService {
+class ProductoDelPedidoController implements ICrudEntity {
 
-    public function ListarUnProducto($request, $response, $args)
+    public function ListarUno($request, $response, $args)
     {
         $prodId = intval($args['id']);
         
@@ -30,7 +30,7 @@ class ProductoDelPedidoController implements IProductoService {
           ->withHeader('Content-Type', 'application/json');
     }
 
-    public function ListarProductos($request, $response){
+    public function ListarTodos($request, $response){
 
         //$array = array();
         $listaProductos = ProductoDelPedido::all();
@@ -52,7 +52,7 @@ class ProductoDelPedidoController implements IProductoService {
           ->withHeader('Content-Type', 'application/json');
     }
 
-    public function CargarUnProducto($request, $response){
+    public function CargarUno($request, $response){
 
         $ArrayParam = $request->getParsedBody();
         $prod = new ProductoDelPedido();
@@ -76,7 +76,7 @@ class ProductoDelPedidoController implements IProductoService {
             ->withHeader('Content-Type', 'application/json');
     }
 
-    public function BorrarUnProducto($request, $response, $args){
+    public function BorrarUno($request, $response, $args){
         $productoId = $args['id'];
         // Buscamos el producto
         $producto = ProductoDelPedido::find($productoId);
@@ -90,7 +90,7 @@ class ProductoDelPedidoController implements IProductoService {
         ->withHeader('Content-Type', 'application/json');
     }
 
-    public function ModificarUnProducto($request, $response, $args){
+    public function ModificarUno($request, $response, $args){
         $parametros = $request->getParsedBody();
         
         $prodModificado = new ProductoDelPedido();

@@ -67,6 +67,42 @@ class ClienteController{
         return $retorno;
     }
 
+    public function DescargarPorPDF($request, $response){
+        $clientes = Cliente::all('codigo', 'nombre', 'apellido')->toArray();
+        $arrayClientes = array();
+
+        foreach($clientes as $c){
+            $arrC = array();
+            array_push($arrC, $c['codigo']);
+            array_push($arrC, $c['nombre']);
+            array_push($arrC, $c['apellido']);
+            array_push($arrayClientes, $arrC);
+        }
+
+        $payload = json_encode($clientes);
+        $pdf = self::CrearPDF($arrayClientes);
+       
+        $pdf->Output("clientes.pdf", 'D');   
+
+        $response->getBody()->write($payload);
+        return $response
+        ->withHeader('Content-Type', 'application/json');
+    }
+
+    public static function CrearPDF($arrayProd){
+        $pdf = new PDF();
+        $header = array('Mesa', 'Nombre', 'Apellido');
+
+        $pdf->SetFont('Arial', 'B', 16);
+        $pdf->AddPage();
+        $pdf->Cell(10, 15, 'LISTADO DE CLIENTES');
+        $pdf->Ln();
+        $pdf->Ln();
+        $pdf->ImprovedTable($header,$arrayProd);
+       
+        return $pdf;
+    }
+
 }
 
 ?>

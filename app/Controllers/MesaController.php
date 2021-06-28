@@ -1,6 +1,6 @@
 <?php // CLASE CLIENTE DEBERIA EXISTIR Y TENER UNA MESA
 
-require_once './Services/IMesaService.php';
+require_once './Services/ICrudEntity.php';
 require_once './models/Pedido.php';
 require_once './models/Mesa.php';
 require_once './models/Cliente.php';
@@ -14,9 +14,9 @@ use App\Models\Cliente as Cliente;
 use App\Models\ProductoDelPedido as ProductoDelPedido;
 use App\Models\Producto as Producto;
 
-class MesaController implements IMesaService {
+class MesaController implements ICrudEntity {
 
-    public function ListarUnaMesa($request, $response, $args)
+    public function ListarUno($request, $response, $args)
     {
         $arrayFinal = array();
         $mesaId = intval($args['id']);
@@ -51,7 +51,7 @@ class MesaController implements IMesaService {
           ->withHeader('Content-Type', 'application/json');
     }
 
-    public function ListarMesas($request, $response){
+    public function ListarTodos($request, $response){
 
         $arrayPedidos = array();
         $arrayFinal = array();
@@ -87,7 +87,7 @@ class MesaController implements IMesaService {
         ->withHeader('Content-Type', 'application/json');
     }
 
-    public function CargarUnaMesa($request, $response){
+    public function CargarUno($request, $response){
 
         $ArrayParam = $request->getParsedBody();
         $mesa = new Mesa();
@@ -110,7 +110,7 @@ class MesaController implements IMesaService {
             ->withHeader('Content-Type', 'application/json');
     }
 
-    public function BorrarUnaMesa($request, $response, $args){
+    public function BorrarUno($request, $response, $args){
         $mesaId = $args['id'];
         // Buscamos la mesa
         $mesa = Mesa::find($mesaId);
@@ -128,7 +128,7 @@ class MesaController implements IMesaService {
         ->withHeader('Content-Type', 'application/json');
     }
 
-    public function ModificarUnaMesa($request, $response, $args){
+    public function ModificarUno($request, $response, $args){
         $parametros = $request->getParsedBody();
         
         $mesaModificada = new Mesa();

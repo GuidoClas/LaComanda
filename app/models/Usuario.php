@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use JsonSerializable;
+use Carbon\Carbon as Carbon;
 
 class Usuario extends Model{
 
@@ -22,6 +22,7 @@ class Usuario extends Model{
     protected $fillable = [
         'usuario', 'clave','tipo', 'nombre', 'apellido', 'estado', 'fechaAlta', 'fechaBaja', 'fechaMod'
     ];
+
 }
 
 ?>

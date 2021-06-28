@@ -1,6 +1,6 @@
 <?php
 
-require_once './Services/IPedidoService.php';
+require_once './Services/ICrudEntity.php';
 require_once './models/Pedido.php';
 require_once './models/Producto.php';
 require_once './models/ProductoDelPedido.php';
@@ -9,9 +9,9 @@ use App\Models\ProductoDelPedido as ProductoDelPedido;
 use App\Models\Producto as Producto;
 use App\Models\Pedido as Pedido;
 
-class PedidoController implements IPedidoService {
+class PedidoController implements ICrudEntity {
 
-    public function ListarUnPedido($request, $response, $args)
+    public function ListarUno($request, $response, $args)
     {
         $pedidoId = intval($args['id']);
 
@@ -64,7 +64,7 @@ class PedidoController implements IPedidoService {
           ->withHeader('Content-Type', 'application/json');
     }
 
-    public function ListarPedidos($request, $response){
+    public function ListarTodos($request, $response){
 
         $pedidos = Pedido::all();
         
@@ -124,7 +124,7 @@ class PedidoController implements IPedidoService {
         ->withHeader('Content-Type', 'application/json');
     }
 
-    public function CargarUnPedido($request, $response){
+    public function CargarUno($request, $response){
 
         $ArrayParam = $request->getParsedBody();
         $pedido = new Pedido();
@@ -146,7 +146,7 @@ class PedidoController implements IPedidoService {
             ->withHeader('Content-Type', 'application/json');
     }
 
-    public function BorrarUnPedido($request, $response, $args){
+    public function BorrarUno($request, $response, $args){
         $pedidoId = $args['id'];
         // Buscamos el pedido
         $pedido = Pedido::find($pedidoId);
@@ -164,7 +164,7 @@ class PedidoController implements IPedidoService {
         ->withHeader('Content-Type', 'application/json');
     }
 
-    public function ModificarUnPedido($request, $response, $args){
+    public function ModificarUno($request, $response, $args){
         $parametros = $request->getParsedBody();
         
         $pedModificado = new Pedido();

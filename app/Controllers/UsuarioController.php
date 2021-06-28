@@ -1,13 +1,14 @@
 <?php
-require_once './Services/IUsuarioService.php';
+require_once './Services/ICrudEntity.php';
 require_once './models/Usuario.php';
 require_once './Utils/CSVLoader.php';
+
 use App\Models\Usuario as Usuario;
 use Utils\CSV\CSVLoader as CSV;
 
-class UsuarioController implements IUsuarioService {
+class UsuarioController implements ICrudEntity {
 
-    public function ListarUnUsuario($request, $response, $args){
+    public function ListarUno($request, $response, $args){
         $usuId = intval($args['id']);
 
         $usuario = Usuario::find($usuId);
@@ -18,7 +19,7 @@ class UsuarioController implements IUsuarioService {
           ->withHeader('Content-Type', 'application/json');
     }
 
-    public function ListarUsuarios($request, $response){
+    public function ListarTodos($request, $response){
 
         $lista = Usuario::all();
         
@@ -29,7 +30,7 @@ class UsuarioController implements IUsuarioService {
           ->withHeader('Content-Type', 'application/json');
     }
 
-    public function CargarUnUsuario($request, $response){
+    public function CargarUno($request, $response){
 
         $ArrayParam = $request->getParsedBody();
         $usuario = new Usuario();
@@ -55,7 +56,7 @@ class UsuarioController implements IUsuarioService {
             ->withHeader('Content-Type', 'application/json');
     }
 
-    public function BorrarUnUsuario($request, $response, $args){
+    public function BorrarUno($request, $response, $args){
         $usuarioId = $args['id'];
         // Buscamos el usuario
         $usuario = Usuario::find($usuarioId);
@@ -69,7 +70,7 @@ class UsuarioController implements IUsuarioService {
         ->withHeader('Content-Type', 'application/json');
     }
 
-    public function ModificarUnUsuario($request, $response, $args){
+    public function ModificarUno($request, $response, $args){
         $parametros = $request->getParsedBody();
         
         $usrModificado = new Usuario();
@@ -152,7 +153,7 @@ class UsuarioController implements IUsuarioService {
     public function CargarPorCSV($request, $response){
         $pathArchivo = self::ObtenerArchivo("archivoCSV");
 
-        $csv = CSV::ObtenerDatos($pathArchivo);
+        $csv = CSV::ObtenerDatosUsuarios($pathArchivo);
 
         foreach($csv as $user){
             $usuario = new Usuario();
@@ -171,9 +172,36 @@ class UsuarioController implements IUsuarioService {
         ->withHeader('Content-Type', 'application/json');
     }
 
+    public function DescargarPorCSV($request, $response){
+        
+        $usuarios = Usuario::all()->toArray();
+        $path = dirname(__DIR__,1) . '/UsersCSV/';
+        try{
+            $fp = fopen($path . 'usuariosDescargados.csv', 'w');
+
+            foreach($usuarios as $user){
+                fputcsv($fp, $user);
+            }
+            fclose($fp);
+
+        }catch(Exception $ex){
+            $response->getBody()->write(json_encode(array("mensaje" => "error")));
+            return $response
+            ->withHeader('Content-Type', 'application/json');
+        }
+        
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename="' . 'usuariosDescargados' . '.csv"');
+        header('Content-Length: ' . filesize($path . '/usuariosDescargados.csv'));
+        echo readfile($path . 'usuariosDescargados.csv'); 
+
+        return $response;
+    }
+
     public static function ObtenerArchivo ( string $nombreFile ) : ?string {
         return (key_exists($nombreFile, $_FILES)) ? $_FILES[$nombreFile]['tmp_name'] : NULL;
     }
+
 }
 
 ?>
