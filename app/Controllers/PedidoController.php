@@ -107,9 +107,9 @@ class PedidoController implements ICrudEntity {
                         $p->precio = $prod->precio;
                         $p->descripcion = $prod->descripcion;
                     }
-                    $pedido->listaProductos = $productosDelPedido;
-                    array_push($arrayFinal, $pedido);
                 }
+                $pedido->listaProductos = $productosDelPedido;
+                array_push($arrayFinal, $pedido);
             }
         }
 
