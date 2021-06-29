@@ -19,6 +19,7 @@ require_once './Controllers/PedidoController.php';
 require_once './Controllers/MesaController.php';
 require_once './Controllers/AuthController.php';
 require_once './Controllers/ClienteController.php';
+require_once './Controllers/ConsultasController.php';
 require_once './Middlewares/LoggerMW.php';
 
 $app = AppFactory::create();
@@ -117,6 +118,28 @@ $app->group('/mesas', function (RouteCollectorProxy $group){
     //El cliente puede ver su mesa y pedido sin ninguna validacion
     $group->get('/listarUnaParaCliente/{codigoMesa}/{codigoPedido}', \MesaController::class . ':DevolverDuracion');
 });
+
+$app->group('/consultas', function (RouteCollectorProxy $group){
+    //formato fechas ej:2021-06-27.
+    $group->get('/ingresos/{desde}/{hasta}', \ConsultasController::class . ':IngresosDeUsuarios');
+    $group->get('/cantidadOperacionesSector/{sector}', \ConsultasController::class . ':CantidadDeOpPorSector');
+    $group->get('/cantidadOperacionesSectorPorEmpleado/{sector}', \ConsultasController::class . ':CantidadDeOpPorSectorPorEmpleado');
+    $group->get('/cantidadOperacionesPorEmpleado', \ConsultasController::class . ':CantidadDeOpPorPorEmpleado');
+    /////////////////////////////
+    $group->get('/productoMasVendidoEnPedidos', \ConsultasController::class . ':ProductoMasVendido');
+    $group->get('/productoMenosVendidoEnPedidos', \ConsultasController::class . ':ProductoMenosVendido');
+    $group->get('/pedidosDemorados', \ConsultasController::class . ':PedidosDemorados');
+    $group->get('/pedidosCancelados', \ConsultasController::class . ':PedidosCancelados');
+    ////////////////////////////
+    $group->get('/mesaMasUsada', \ConsultasController::class . ':MesaMasUsada');
+    $group->get('/mesaMenosUsada', \ConsultasController::class . ':MesaMenosUsada');
+    $group->get('/mesaFacturoMas', \ConsultasController::class . ':MesaQueMasFacturo');
+    $group->get('/mesaFacturoMenos', \ConsultasController::class . ':MesaQueMenosFacturo');
+    $group->get('/mesaMayorImporte', \ConsultasController::class . ':MesaConMayorImporte');
+    $group->get('/mesaMenorImporte', \ConsultasController::class . ':MesaConMenorImporte');
+    $group->get('/facturacionEntreFechas/{desde}/{hasta}', \ConsultasController::class . ':FacturacionDeMesaEntreFechas');
+
+})->add(\LoggerMW::class . ':LogSocio');
 
 $app->run();
 

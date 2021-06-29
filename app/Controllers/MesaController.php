@@ -7,6 +7,7 @@ require_once './models/Cliente.php';
 require_once './models/ProductoDelPedido.php';
 require_once './models/Producto.php';
 require_once './Controllers/ClienteController.php';
+require_once './Utils/LogOperaciones.php';
 
 use App\Models\Mesa as Mesa;
 use App\Models\Pedido as Pedido;
@@ -88,6 +89,9 @@ class MesaController implements ICrudEntity {
     }
 
     public function CargarUno($request, $response){
+        //TOKEN
+        $requestHeader = $request->getHeader('token');
+        $elToken = $requestHeader[0];
 
         $ArrayParam = $request->getParsedBody();
         $mesa = new Mesa();
@@ -96,8 +100,12 @@ class MesaController implements ICrudEntity {
         $mesa->estado = $ArrayParam['estado'];
 
         if($mesa !== null){
-            $cliente = Cliente::find($mesa->id_cliente);
             $mesa->save();
+
+            $user = AuthentificatorJWT::ObtenerData($elToken);
+            $user = json_decode ($user,true);
+            LogOperaciones::Loguear($user['usuario'][0]['usuario'],$user['usuario'][0]['tipo'],"Carga de Mesa");
+
             $payload = json_encode(array("mensaje" => "Mesa cargada exitosamente"));
             $response->getBody()->write($payload);
         }
@@ -111,6 +119,10 @@ class MesaController implements ICrudEntity {
     }
 
     public function BorrarUno($request, $response, $args){
+        //TOKEN
+        $requestHeader = $request->getHeader('token');
+        $elToken = $requestHeader[0];
+
         $mesaId = $args['id'];
         // Buscamos la mesa
         $mesa = Mesa::find($mesaId);
@@ -118,6 +130,11 @@ class MesaController implements ICrudEntity {
         if($mesa !== null){
             // Borramos
             $mesa->delete();
+
+            $user = AuthentificatorJWT::ObtenerData($elToken);
+            $user = json_decode ($user,true);
+            LogOperaciones::Loguear($user['usuario'][0]['usuario'],$user['usuario'][0]['tipo'],"Borro Mesa");
+
             $payload = json_encode(array("mensaje" => "Mesa borrada con exito"));
         }else{
             $payload = json_encode(array("mensaje" => "Mesa no encontrada"));
@@ -129,6 +146,10 @@ class MesaController implements ICrudEntity {
     }
 
     public function ModificarUno($request, $response, $args){
+        //TOKEN
+        $requestHeader = $request->getHeader('token');
+        $elToken = $requestHeader[0];
+
         $parametros = $request->getParsedBody();
         
         $mesaModificada = new Mesa();
@@ -150,6 +171,10 @@ class MesaController implements ICrudEntity {
             // Guardamos en base de datos
             $mesa->save();
 
+            $user = AuthentificatorJWT::ObtenerData($elToken);
+            $user = json_decode ($user,true);
+            LogOperaciones::Loguear($user['usuario'][0]['usuario'],$user['usuario'][0]['tipo'],"Modifico Mesa");
+
             // Le setteamos el codigo de la mesa generada al cliente correspondiente.
             if(ClienteController::ModificarUnCliente($mesa->id_cliente, $mesa->codigo)){
                 $payload = json_encode(array("mensaje" => "Mesa modificada con exito"));
@@ -166,6 +191,10 @@ class MesaController implements ICrudEntity {
     }
 
     public function ModificarEstadoDeMesa($request, $response, $args){
+        //TOKEN
+        $requestHeader = $request->getHeader('token');
+        $elToken = $requestHeader[0];
+
         $idMesa = $args['id'];
         $estadoNum = $args['estado'];
         $nuevoEstado = self::AsignarEstadoMesa($estadoNum);
@@ -179,6 +208,11 @@ class MesaController implements ICrudEntity {
             $mesa->estado = $nuevoEstado;
             // Guardamos en base de datos
             $mesa->save();
+
+            $user = AuthentificatorJWT::ObtenerData($elToken);
+            $user = json_decode ($user,true);
+            LogOperaciones::Loguear($user['usuario'][0]['usuario'],$user['usuario'][0]['tipo'],"Cambio estado de Mesa");
+
             $payload = json_encode(array("mensaje" => "Estado de mesa actualizado con exito"));
         } else {
             $payload = json_encode(array("mensaje" => "Mesa no encontrada"));
@@ -190,6 +224,10 @@ class MesaController implements ICrudEntity {
     }
 
     public function CerrarMesa($request, $response, $args){
+        //TOKEN
+        $requestHeader = $request->getHeader('token');
+        $elToken = $requestHeader[0];
+
         $idMesa = $args['id'];
         $nuevoEstado = "Cerrada";
 
@@ -202,6 +240,11 @@ class MesaController implements ICrudEntity {
             $mesa->estado = $nuevoEstado;
             // Guardamos en base de datos
             $mesa->save();
+
+            $user = AuthentificatorJWT::ObtenerData($elToken);
+            $user = json_decode ($user,true);
+            LogOperaciones::Loguear($user['usuario'][0]['usuario'],$user['usuario'][0]['tipo'],"Cerro Mesa");
+
             $payload = json_encode(array("mensaje" => "Estado de mesa actualizado con exito"));
         } else {
             $payload = json_encode(array("mensaje" => "Mesa no encontrada"));

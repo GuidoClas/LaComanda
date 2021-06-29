@@ -2,6 +2,7 @@
 require_once './models/Producto.php';
 require_once './Utils/CSVLoader.php';
 require_once './Utils/PDF.php';
+require_once './Auth/Authentificator.php';
 
 use App\Models\Producto as Producto;
 use Utils\CSV\CSVLoader as CSV;
@@ -94,6 +95,7 @@ class ProductoController {
     public static function ObtenerArchivo ( string $nombreFile ) : ?string {
         return (key_exists($nombreFile, $_FILES)) ? $_FILES[$nombreFile]['tmp_name'] : NULL;
     }
+
 }
 
 ?>

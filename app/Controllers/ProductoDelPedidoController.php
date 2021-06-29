@@ -4,6 +4,7 @@ require_once './Services/ICrudEntity.php';
 require_once './models/ProductoDelPedido.php';
 require_once './models/Producto.php';
 require_once './models/Pedido.php';
+require_once './Utils/LogOperaciones.php';
 
 use App\Models\ProductoDelPedido as ProductoDelPedido;
 use App\Models\Producto as Producto;
@@ -53,17 +54,25 @@ class ProductoDelPedidoController implements ICrudEntity {
     }
 
     public function CargarUno($request, $response){
-
+        //TOKEN
+        $requestHeader = $request->getHeader('token');
+        $elToken = $requestHeader[0];
+        
         $ArrayParam = $request->getParsedBody();
         $prod = new ProductoDelPedido();
         $prod->id_pedido = $ArrayParam['id_pedido'];
         $prod->id_prod = $ArrayParam['id_prod'];
         $prod->sector = $ArrayParam['sector'];
-        $prod->estado = $ArrayParam['estado'];
+        $prod->estado = "Pendiente";
         $prod->duracionEstimada = $ArrayParam['duracionEstimada'];
        
         if(isset($prod)){
             $prod->save();
+
+            $user = AuthentificatorJWT::ObtenerData($elToken);
+            $user = json_decode ($user,true);
+            LogOperaciones::Loguear($user['usuario'][0]['usuario'],$user['usuario'][0]['tipo'],"Carga de Producto en Pedido");
+
             $payload = json_encode(array("mensaje" => "Producto del pedido cargado exitosamente"));
             $response->getBody()->write($payload);
         }
@@ -77,11 +86,19 @@ class ProductoDelPedidoController implements ICrudEntity {
     }
 
     public function BorrarUno($request, $response, $args){
+        //TOKEN
+        $requestHeader = $request->getHeader('token');
+        $elToken = $requestHeader[0];
+
         $productoId = $args['id'];
         // Buscamos el producto
         $producto = ProductoDelPedido::find($productoId);
         // Borramos
         $producto->delete();
+
+        $user = AuthentificatorJWT::ObtenerData($elToken);
+        $user = json_decode ($user,true);
+        LogOperaciones::Loguear($user['usuario'][0]['usuario'],$user['usuario'][0]['tipo'],"Borro Producto en Pedido");
 
         $payload = json_encode(array("mensaje" => "Producto borrado con exito"));
 
@@ -91,6 +108,10 @@ class ProductoDelPedidoController implements ICrudEntity {
     }
 
     public function ModificarUno($request, $response, $args){
+        //TOKEN
+        $requestHeader = $request->getHeader('token');
+        $elToken = $requestHeader[0];
+
         $parametros = $request->getParsedBody();
         
         $prodModificado = new ProductoDelPedido();
@@ -112,6 +133,11 @@ class ProductoDelPedidoController implements ICrudEntity {
             $prod->estado = $prodModificado->estado;
             // Guardamos en base de datos
             $prod->save();
+
+            $user = AuthentificatorJWT::ObtenerData($elToken);
+            $user = json_decode ($user,true);
+            LogOperaciones::Loguear($user['usuario'][0]['usuario'],$user['usuario'][0]['tipo'],"Modifico Producto en Pedido");
+
             $payload = json_encode(array("mensaje" => "Producto del pedido modificado con exito"));
         } else {
             $payload = json_encode(array("mensaje" => "Producto no encontrado"));
@@ -123,6 +149,10 @@ class ProductoDelPedidoController implements ICrudEntity {
     }
 
     public function TomarProductoParaElaborar($request, $response, $args){
+        //TOKEN
+        $requestHeader = $request->getHeader('token');
+        $elToken = $requestHeader[0];
+
         $parametros = $request->getParsedBody();
         $idProd = $args['id'];
         $sector = $parametros['sector'];
@@ -141,9 +171,15 @@ class ProductoDelPedidoController implements ICrudEntity {
                 if(isset($pedidoDeEsteProducto) && $pedidoDeEsteProducto->estado === "Pendiente"){
                     $pedidoDeEsteProducto->estado = "En Preparacion";
                     $pedidoDeEsteProducto->save();
+
                 }
                 // Guardamos en base de datos
+
                 $productoDelPedido->save();
+                $user = AuthentificatorJWT::ObtenerData($elToken);
+                $user = json_decode ($user,true);
+                LogOperaciones::Loguear($user['usuario'][0]['usuario'],$user['usuario'][0]['tipo'],"Tomo Producto para elaborar en Pedido");
+
                 $payload = json_encode(array("mensaje" => "Producto tomado con exito"));
             } else {
                 $payload = json_encode(array("mensaje" => "Producto no encontrado"));
@@ -160,6 +196,10 @@ class ProductoDelPedidoController implements ICrudEntity {
     }
 
     public function EntregarProducto($request, $response, $args){
+        //TOKEN
+        $requestHeader = $request->getHeader('token');
+        $elToken = $requestHeader[0];
+
         $parametros = $request->getParsedBody();
         $idProd = $args['id'];
         $sector = $parametros['sector'];
@@ -175,6 +215,11 @@ class ProductoDelPedidoController implements ICrudEntity {
                 $productoDelPedido->duracionFinal = $duracionFinal;
                 // Guardamos en base de datos
                 $productoDelPedido->save();
+
+                $user = AuthentificatorJWT::ObtenerData($elToken);
+                $user = json_decode ($user,true);
+                LogOperaciones::Loguear($user['usuario'][0]['usuario'],$user['usuario'][0]['tipo'],"Entrego Producto en Pedido");
+
                 $payload = json_encode(array("mensaje" => "Producto terminado con exito"));
             } else {
                 $payload = json_encode(array("mensaje" => "Producto no encontrado"));
@@ -185,9 +230,6 @@ class ProductoDelPedidoController implements ICrudEntity {
         return $response
         ->withHeader('Content-Type', 'application/json');
 
-        $response->getBody()->write($payload);
-        return $response
-        ->withHeader('Content-Type', 'application/json');
     }
     
 }

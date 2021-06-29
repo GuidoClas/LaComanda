@@ -4,6 +4,7 @@ require_once './Services/ICrudEntity.php';
 require_once './models/Pedido.php';
 require_once './models/Producto.php';
 require_once './models/ProductoDelPedido.php';
+require_once './Utils/LogOperaciones.php';
 
 use App\Models\ProductoDelPedido as ProductoDelPedido;
 use App\Models\Producto as Producto;
@@ -125,6 +126,9 @@ class PedidoController implements ICrudEntity {
     }
 
     public function CargarUno($request, $response){
+        //TOKEN
+        $requestHeader = $request->getHeader('token');
+        $elToken = $requestHeader[0];
 
         $ArrayParam = $request->getParsedBody();
         $pedido = new Pedido();
@@ -134,6 +138,11 @@ class PedidoController implements ICrudEntity {
 
         if($pedido){
             $pedido->save();
+
+            $user = AuthentificatorJWT::ObtenerData($elToken);
+            $user = json_decode ($user,true);
+            LogOperaciones::Loguear($user['usuario'][0]['usuario'],$user['usuario'][0]['tipo'],"Carga de Pedido");
+            
             $payload = json_encode(array("mensaje" => "Pedido cargado exitosamente"));
             $response->getBody()->write($payload);
         }
@@ -147,6 +156,10 @@ class PedidoController implements ICrudEntity {
     }
 
     public function BorrarUno($request, $response, $args){
+        //TOKEN
+        $requestHeader = $request->getHeader('token');
+        $elToken = $requestHeader[0];
+
         $pedidoId = $args['id'];
         // Buscamos el pedido
         $pedido = Pedido::find($pedidoId);
@@ -154,6 +167,11 @@ class PedidoController implements ICrudEntity {
         if($pedido !== null){
             // Borramos
             $pedido->delete();
+
+            $user = AuthentificatorJWT::ObtenerData($elToken);
+            $user = json_decode ($user,true);
+            LogOperaciones::Loguear($user['usuario'][0]['usuario'],$user['usuario'][0]['tipo'],"Borro Pedido");
+
             $payload = json_encode(array("mensaje" => "Pedido borrado con exito"));
         }else{
             $payload = json_encode(array("mensaje" => "Pedido no encontrado"));
@@ -165,6 +183,10 @@ class PedidoController implements ICrudEntity {
     }
 
     public function ModificarUno($request, $response, $args){
+        //TOKEN
+        $requestHeader = $request->getHeader('token');
+        $elToken = $requestHeader[0];
+
         $parametros = $request->getParsedBody();
         
         $pedModificado = new Pedido();
@@ -185,6 +207,11 @@ class PedidoController implements ICrudEntity {
             $pedido->estado = $pedModificado->estado;
             // Guardamos en base de datos
             $pedido->save();
+
+            $user = AuthentificatorJWT::ObtenerData($elToken);
+            $user = json_decode ($user,true);
+            LogOperaciones::Loguear($user['usuario'][0]['usuario'],$user['usuario'][0]['tipo'],"Modifico Pedido");
+
             $payload = json_encode(array("mensaje" => "Pedido modificado con exito"));
         } else {
             $payload = json_encode(array("mensaje" => "Pedido no encontrado"));
@@ -196,6 +223,10 @@ class PedidoController implements ICrudEntity {
     }
     
     public function ActualizarUnPedido($request, $response, $args){
+        //TOKEN
+        $requestHeader = $request->getHeader('token');
+        $elToken = $requestHeader[0];
+
         $parametros = $request->getParsedBody();
         $idPedido = $parametros['id'];
         $nuevoEstado = $parametros['estado'];
@@ -209,6 +240,11 @@ class PedidoController implements ICrudEntity {
                 $pedido->estado = $nuevoEstado;
                 // Guardamos en base de datos
                 $pedido->save();
+
+                $user = AuthentificatorJWT::ObtenerData($elToken);
+                $user = json_decode ($user,true);
+                LogOperaciones::Loguear($user['usuario'][0]['usuario'],$user['usuario'][0]['tipo'],"Actualizo estado de Pedido");
+
                 $payload = json_encode(array("mensaje" => "Estado del Pedido actualizado con exito"));
             } else {
                 $payload = json_encode(array("mensaje" => "Pedido no encontrado"));
@@ -221,6 +257,10 @@ class PedidoController implements ICrudEntity {
     }
 
     public function ListarParaServirPedido($request, $response, $args){
+        //TOKEN
+        $requestHeader = $request->getHeader('token');
+        $elToken = $requestHeader[0];
+
         $codigo = $args['codigo'];
 
         if($codigo !== null && strlen($codigo) == 5){
@@ -231,6 +271,11 @@ class PedidoController implements ICrudEntity {
                 $pedido->estado = "Listo para servir";
                 // Guardamos en base de datos
                 $pedido->save();
+
+                $user = AuthentificatorJWT::ObtenerData($elToken);
+                $user = json_decode ($user,true);
+                LogOperaciones::Loguear($user['usuario'][0]['usuario'],$user['usuario'][0]['tipo'],"Listo Pedido para servir");
+
                 $payload = json_encode(array("mensaje" => "Estado del Pedido actualizado con exito"));
             } else {
                 $payload = json_encode(array("mensaje" => "Pedido no encontrado"));
@@ -243,6 +288,10 @@ class PedidoController implements ICrudEntity {
     }
 
     public function EntregarPedido($request, $response, $args){
+        //TOKEN
+        $requestHeader = $request->getHeader('token');
+        $elToken = $requestHeader[0];
+
         $codigo = $args['codigo'];
 
         if($codigo !== null && strlen($codigo) == 5){
@@ -253,6 +302,11 @@ class PedidoController implements ICrudEntity {
                 $pedido->estado = "Entregado";
                 // Guardamos en base de datos
                 $pedido->save();
+
+                $user = AuthentificatorJWT::ObtenerData($elToken);
+                $user = json_decode ($user,true);
+                LogOperaciones::Loguear($user['usuario'][0]['usuario'],$user['usuario'][0]['tipo'],"Entrego Pedido");
+
                 $payload = json_encode(array("mensaje" => "Estado del Pedido actualizado con exito"));
             } else {
                 $payload = json_encode(array("mensaje" => "Pedido no encontrado"));
@@ -265,6 +319,10 @@ class PedidoController implements ICrudEntity {
     }
 
     public function CancelarPedido($request, $response, $args){
+        //TOKEN
+        $requestHeader = $request->getHeader('token');
+        $elToken = $requestHeader[0];
+
         $codigo = $args['codigo'];
 
         if($codigo !== null && strlen($codigo) == 5){
@@ -275,6 +333,11 @@ class PedidoController implements ICrudEntity {
                 $pedido->estado = "Cancelado";
                 // Guardamos en base de datos
                 $pedido->save();
+
+                $user = AuthentificatorJWT::ObtenerData($elToken);
+                $user = json_decode ($user,true);
+                LogOperaciones::Loguear($user['usuario'][0]['usuario'],$user['usuario'][0]['tipo'],"Cancelo Pedido");
+
                 $payload = json_encode(array("mensaje" => "Pedido cancelado con exito"));
             } else {
                 $payload = json_encode(array("mensaje" => "Pedido no encontrado"));
