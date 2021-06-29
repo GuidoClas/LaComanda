@@ -101,11 +101,11 @@ class ConsultasController{
         return $response
         ->withHeader('Content-Type', 'application/json');
     }
-    //SELECT pedidos.codigo as Codigo FROM `productos_del_pedido` INNER JOIN pedidos ON productos_del_pedido.id_pedido = pedidos.id WHERE duracionFinal > duracionEstimada
 
     public function PedidosDemorados($request, $response, $args){
 
         $collection = ProductoDelPedido::groupBy('id_prod')
+        ->selectRaw('pedidos.codigo as CodigoPedido, id_prod')
         ->join('pedidos', 'productos_del_pedido.id_pedido', '=', 'pedidos.id')
         ->where('duracionFinal', '>', 'duracionEstimada')
         ->where('pedidos.estado', '=', 'Entregado')
