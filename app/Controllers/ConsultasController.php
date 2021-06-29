@@ -106,7 +106,6 @@ class ConsultasController{
     public function PedidosDemorados($request, $response, $args){
 
         $collection = ProductoDelPedido::groupBy('id_prod')
-        ->selectRaw('pedidos.codigo as CodigoPedido')
         ->join('pedidos', 'productos_del_pedido.id_pedido', '=', 'pedidos.id')
         ->where('duracionFinal', '>', 'duracionEstimada')
         ->where('pedidos.estado', '=', 'Entregado')
