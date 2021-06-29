@@ -1,5 +1,5 @@
 <?php
-require('C:/xampp/htdocs/ModeloParcial2/app/Utils/pdf/fpdf.php');
+require(__DIR__ .'/pdf/fpdf.php');
 
 class PDF extends FPDF{
 // Cargar los datos

@@ -52,6 +52,7 @@ $capsule->bootEloquent();
 
 $app->post('/log', \AuthController::class . ':IniciarSesion');
 
+
 $app->group('/usuarios', function (RouteCollectorProxy $group){
     $group->post('/agregar', \UsuarioController::class . ':CargarUno');
     $group->get('/listar', \UsuarioController::class . ':ListarTodos');
