@@ -23,7 +23,7 @@ require_once './Controllers/ConsultasController.php';
 require_once './Middlewares/LoggerMW.php';
 
 $app = AppFactory::create();
-$app->setBasePath('/LaComanda/app');
+$app->setBasePath('/app');
 $app->addBodyParsingMiddleware();
 $app->addRoutingMiddleware();
 // Add error middleware
