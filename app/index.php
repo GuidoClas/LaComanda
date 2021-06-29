@@ -68,17 +68,17 @@ $app->group('/usuarios', function (RouteCollectorProxy $group){
 })->add(\LoggerMW::class . ':LogSocio');
 
 $app->group('/clientes', function (RouteCollectorProxy $group){
-    $group->post('/agregar', \ClienteController::class . ':CargarUnCliente');
-    $group->get('/listarUno/{id}', \ClienteController::class . ':ListarUnCliente');
-    $group->delete('/{id}', \ClienteController::class . ':BorrarUnCliente');
+    $group->post('/agregar', \ClienteController::class . ':CargarUnCliente')->add(\LoggerMW::class . ':LogMozoYSocio');
+    $group->get('/listarUno/{id}', \ClienteController::class . ':ListarUnCliente')->add(\LoggerMW::class . ':LogMozoYSocio');
+    $group->delete('/{id}', \ClienteController::class . ':BorrarUnCliente')->add(\LoggerMW::class . ':LogMozoYSocio');
     $group->get('/descargarPDF', \ClienteController::class . ':DescargarPorPDF');
-})->add(\LoggerMW::class . ':LogMozoYSocio');
+});
 
 $app->group('/productos', function (RouteCollectorProxy $group){
-    $group->post('/cargarCSV', \ProductoController::class . ':CargarPorCSV');
+    $group->post('/cargarCSV', \ProductoController::class . ':CargarPorCSV')->add(\LoggerMW::class . ':LogEmpleado');
     $group->get('/descargarCSV', \ProductoController::class . ':DescargarPorCSV');
     $group->get('/descargarPDF', \ProductoController::class . ':DescargarPorPDF');
-})->add(\LoggerMW::class . ':LogEmpleado');
+});
  
 $app->group('/productosDelPedido', function (RouteCollectorProxy $group){
     $group->post('/agregar', \ProductoDelPedidoController::class . ':CargarUno');
